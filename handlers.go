@@ -9,7 +9,7 @@ import (
 
 
 type comicManager interface {
-	searchTranscripts(searchTerm string) []jsonComic
+	searchTranscripts(searchTerm string) ([]dbComic, error)
 }
 
 type jsonComic struct {
@@ -35,7 +35,6 @@ type searchHandler struct {
 
 func (h searchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Interpret the search request
-
 	var m searchRequest
 	d := json.NewDecoder(r.Body)
 	err := d.Decode(&m)
@@ -49,10 +48,20 @@ func (h searchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
-	found := h.storage.searchTranscripts(m.Term)
+	found, err := h.storage.searchTranscripts(m.Term)
+	if err != nil{
+		log.Println(err)
+		return
+	}
+
+	foundFormatted,err := formatFoundFromDBComicToJSONComic(found)
+	if err != nil{
+		log.Println(err)
+		return
+	}
 
 	var result searchResponse
-	result.Comics = found
+	result.Comics = foundFormatted
 	result.CurrentPage = 1
 	result.TotalPages = 1
 
@@ -67,5 +76,9 @@ func (h searchHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
+}
+func formatFoundFromDBComicToJSONComic(comics []dbComic) ([]jsonComic, error) {
+	// TODO
+	return []jsonComic{}, nil
 }
 

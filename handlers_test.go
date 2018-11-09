@@ -14,9 +14,9 @@ type comicManagerTest struct {
 	mock.Mock
 }
 
-func (m *comicManagerTest) searchTranscripts(searchTerm string) []jsonComic {
+func (m *comicManagerTest) searchTranscripts(searchTerm string) ([]dbComic, error) {
 	args := m.Called(searchTerm)
-	return args.Get(0).([]jsonComic)
+	return args.Get(0).([]dbComic), args.Error(1)
 }
 
 
@@ -54,13 +54,13 @@ func TestSearchTranscript_empty_result(t *testing.T) {
 	req := httptest.NewRequest("POST", "/json/search", bytes.NewBuffer(b))
 	rr := httptest.NewRecorder()
 	mockCM := new(comicManagerTest)
-	mockCM.On("searchTranscripts",term).Return([]jsonComic{})
+	mockCM.On("searchTranscripts",term).Return([]dbComic{}, nil)
 	handler := http.Handler(searchHandler{storage: mockCM})
 
 	handler.ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusOK, rr.Code)
-	assert.JSONEq(t, `{"current_page":1, "total_pages":1, "jsonComic":[]}`, rr.Body.String())
+	assert.JSONEq(t, `{"current_page":1, "total_pages":1, "comic":[]}`, rr.Body.String())
 	mockCM.AssertExpectations(t)
 }
 

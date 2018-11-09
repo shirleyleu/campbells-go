@@ -1,0 +1,6 @@
+*.db
+campbells
+exercises/
+vendor
+Gopkg*
+campbells-go

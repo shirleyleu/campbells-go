@@ -8,7 +8,12 @@ import (
 
 func main() {
 	r := mux.NewRouter()
-	r.Handle("/json/search", searchHandler{storage: comicManagerSQLite{}})
+	cm, err := newComicManagerSQLite("./foxtrot.db")
+	if err !=nil {
+		log.Fatal(err)
+	}
+	r.Handle("/json/search", searchHandler{storage: cm})
 	http.Handle("/", r)
+	log.Print("Listening on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
